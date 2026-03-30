@@ -316,18 +316,6 @@ Desde la raíz del repo: `make up` (Docker), `make test-api`, `make build-web`. 
 
 ---
 
-## Problemas frecuentes
-
-| Síntoma | Qué hacer |
-|---------|-----------|
-| `Bind for 0.0.0.0:5432 failed` | Otro Postgres usa el 5432. Este proyecto mapea **5433** en el host; no cambies sin revisar `docker-compose.yml`. |
-| `ERR_CONNECTION_REFUSED` en :4200 | El front no está levantado: `cd eps-solicitudes-web && npm start`. |
-| `ModuleNotFoundError: bcrypt` al hacer pytest | Activa `.venv` y usa `python -m pytest`. |
-| `ng test` “outside a workspace” | Debes estar en **`eps-solicitudes-web`**, no en la API. |
-| Tabla de solicitudes vacía pero “N total” | Ya corregido en API (serialización de fechas ISO). Reconstruye: `docker compose up -d --build api`. |
-
----
-
 ## Entorno de ejecución
 
 | Componente   | Versión orientativa |
