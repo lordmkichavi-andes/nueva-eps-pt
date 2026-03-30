@@ -1,63 +1,60 @@
-# EPS — Prueba técnica (Angular + Flask + PostgreSQL)
+# 🏥 EPS — Prueba técnica · Angular + Flask + PostgreSQL
 
-Aplicación **full stack** para **solicitudes de medicamentos**: autenticación (JWT), catálogo de medicamentos (POS / NO POS), creación de solicitudes con validación condicional y listado paginado.
+Aplicación full stack para gestión de **solicitudes de medicamentos**: autenticación con JWT, catálogo POS / NO POS, creación de solicitudes con validación condicional y listado paginado.
 
-Este repositorio contiene **dos proyectos independientes**:
+El repositorio tiene dos proyectos independientes:
 
 | Carpeta | Rol |
 |---------|-----|
-| **`eps-solicitudes-api/`** | API REST Flask (módulos `auth` y solicitudes). |
-| **`eps-solicitudes-web/`** | SPA Angular (login, registro, formulario, listado). |
+| `eps-solicitudes-api/` | API REST en Flask (blueprints `auth` y `solicitudes`) |
+| `eps-solicitudes-web/` | SPA Angular — login, registro, formulario, listado |
 
-La base de datos es **PostgreSQL**, dockerizada junto a la API en el `docker-compose` de la raíz.
+La base de datos es PostgreSQL, dockerizada junto a la API mediante `docker-compose`.
 
 ---
 
-## Repositorio
+## 🔗 Repositorio
 
 **GitHub:** [https://github.com/lordmkichavi-andes/nueva-eps-pt](https://github.com/lordmkichavi-andes/nueva-eps-pt)
 
-Rama principal: **`main`**. En cada `push` se ejecuta **CI** (pytest + build de Angular): [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+Rama principal: `main`. Cada `push` dispara **CI** (pytest + build Angular): [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ---
 
-## Qué incluye esta entrega (checklist)
+## ✅ Qué incluye esta entrega
 
-- [x] **Backend** Python (Flask): `/auth/login`, `/auth/register`, contraseñas con hash (bcrypt), JWT en rutas protegidas.
-- [x] **Módulos separados** de autenticación y de solicitudes (blueprints).
-- [x] **Frontend** Angular: login/registro, solicitud con campos extra si el medicamento es **NO POS**, listado **paginado** solo autenticado.
-- [x] **PostgreSQL**: script [`schema.sql`](schema.sql) + modelo ER en este README.
-- [x] **Documentación**: instalación, endpoints, entorno; Docker Compose para levantar API + BD.
-- [x] **Pruebas** (refuerzo): pytest en API, tests unitarios básicos en Angular; CI en GitHub.
+- [x] **Backend** Python/Flask: `/auth/login`, `/auth/register`, contraseñas con bcrypt, JWT en rutas protegidas.
+- [x] **Blueprints separados** para autenticación y solicitudes.
+- [x] **Frontend** Angular: login/registro, campos extra para medicamentos NO POS, listado paginado solo para usuarios autenticados.
+- [x] **PostgreSQL**: script `schema.sql` + modelo ER en este README.
+- [x] **Documentación**: endpoints, variables de entorno, Docker Compose para levantar API + BD.
+- [x] **Pruebas**: pytest en la API, tests básicos en Angular; CI configurado en GitHub.
 
 ---
 
-## Validación rápida (~5 minutos)
+## ⚡ Validación rápida (~5 min)
 
-Objetivo: que una persona pueda **comprobar que todo funciona** sin adivinar comandos.
+### Paso 0 — Requisitos previos
 
-### Paso 0 — Requisitos
-
-- **Docker Desktop** (o Docker Engine + Compose) funcionando.
+- **Docker Desktop** (o Engine + Compose).
 - **Node.js 20+** y **npm** (solo para el front).
 
-### Paso 1 — Levantar API y base de datos
+### Paso 1 — Levantar API y BD
 
-En la **raíz del repositorio** (donde está `docker-compose.yml`):
+Desde la **raíz del repositorio**:
 
 ```bash
 docker compose up -d --build
 ```
 
-Espera unos segundos y comprueba la API:
+Verifica que la API responde:
 
 ```bash
 curl -s http://localhost:5000/health
+# → {"status":"ok"}
 ```
 
-**Resultado esperado:** `{"status":"ok"}`
-
-Si falla el puerto **5432** en el host, este proyecto publica PostgreSQL en **5433** (ver tabla más abajo). La API sigue usando el servicio `db` por red interna.
+> Si el puerto 5432 ya está ocupado en tu máquina, no pasa nada: el compose publica PostgreSQL en el **5433** del host y la API sigue conectándose al servicio `db` por red interna.
 
 ### Paso 2 — Levantar el front
 
@@ -69,29 +66,28 @@ npm install
 npm start
 ```
 
-**Resultado esperado:** compilación sin errores y mensaje indicando **`http://127.0.0.1:4200`** (o `localhost:4200`).
+Cuando veas `http://127.0.0.1:4200` (o `localhost:4200`) en la consola, el front está listo.
 
-### Paso 3 — Probar en el navegador
+### Paso 3 — Prueba en el navegador
 
 1. Abre **http://localhost:4200**
-2. **Registrarse** con un correo válido y contraseña de **al menos 8 caracteres** (no hay usuario por defecto).
-3. En **Nueva solicitud**, elige un medicamento **POS** y envía; debe aparecer en **Mis solicitudes**.
-4. Elige un medicamento **NO POS**: deben mostrarse y validarse orden, dirección, teléfono y correo.
-5. Comprueba la **paginación** si hay más solicitudes que el tamaño de página.
+2. **Regístrate** con correo válido y contraseña de al menos 8 caracteres.
+3. En **Nueva solicitud**, elige un medicamento **POS** y envíala; debe aparecer en Mis solicitudes.
+4. Elige uno **NO POS**: se muestran y validan orden médica, dirección, teléfono y correo.
+5. Verifica la **paginación** agregando varias solicitudes.
 
-### Paso 4 — (Opcional) Pruebas automáticas locales
+### Paso 4 — Pruebas automáticas (opcional)
 
 ```bash
-# API — usar siempre el venv del proyecto
+# API — siempre dentro del venv
 cd eps-solicitudes-api
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
 ```bash
-# Front — desde su carpeta
+# Front
 cd eps-solicitudes-web
 npx ng test --no-watch --browsers=ChromeHeadless
 npm run build
@@ -99,130 +95,102 @@ npm run build
 
 ---
 
-## Tabla de URLs y puertos
+## 🌐 URLs y puertos
 
-| Servicio | URL / puerto | Notas |
-|----------|----------------|-------|
-| **API (Flask)** | `http://localhost:5000` | Health: `GET /health` |
-| **Front (Angular dev)** | `http://localhost:4200` | Configurado en `environment.ts` → `apiUrl` apunta a `:5000` |
-| **PostgreSQL (host)** | `localhost:5433` | Usuario `eps_user`, BD `eps_db`, pass en README más abajo |
-| **PostgreSQL (contenedor)** | servicio `db`, puerto interno 5432 | La API usa `db:5432` por Docker network |
+| Servicio | URL / Puerto | Notas |
+|----------|--------------|-------|
+| **API Flask** | `http://localhost:5000` | Health: `GET /health` |
+| **Front Angular** | `http://localhost:4200` | `apiUrl` apunta a `:5000` en `environment.ts` |
+| **PostgreSQL (host)** | `localhost:5433` | Usuario `eps_user`, BD `eps_db` |
+| **PostgreSQL (interno)** | `db:5432` | Usado por la API dentro de la red Docker |
 
-El front envía el JWT en el header `Authorization: Bearer <token>` (interceptor Angular).
+El front envía el JWT en `Authorization: Bearer <token>` vía interceptor Angular.
 
 ---
 
-## Flujo de demostración sugerido (para video o revisión oral)
+## 🎬 Flujo de demo sugerido
 
-1. Mostrar `README` y estructura (`eps-solicitudes-api`, `eps-solicitudes-web`, `schema.sql`, `docker-compose.yml`).
+1. Mostrar estructura: `eps-solicitudes-api`, `eps-solicitudes-web`, `schema.sql`, `docker-compose.yml`.
 2. `docker compose up -d --build` + `curl /health`.
 3. Registro → login automático → pantalla de solicitudes.
 4. Solicitud **POS** (solo medicamento).
-5. Solicitud **NO POS** con datos extra.
+5. Solicitud **NO POS** con campos extra.
 6. Listado con paginación y cierre de sesión.
 
 ---
 
-## Guía para quien revisa la entrega
+## 🔎 Guía de revisión
 
-| Criterio | Dónde verlo |
-|----------|-------------|
-| Separación auth / solicitudes | `eps-solicitudes-api/app/auth/`, `app/solicitudes/` |
-| Contraseña no en texto plano | bcrypt en `app/auth/routes.py` |
-| Endpoints requeridos | Tabla “Endpoints” más abajo |
+| Criterio | Dónde verificarlo |
+|----------|-------------------|
+| Separación auth / solicitudes | `app/auth/`, `app/solicitudes/` |
+| Contraseñas no en texto plano | bcrypt en `app/auth/routes.py` |
+| Endpoints requeridos | Tabla de endpoints más abajo |
 | Script SQL + ER | `schema.sql` + diagrama Mermaid en este archivo |
-| Validaciones | Backend: rutas + `validators.py`; Front: `shared/form-validators.ts` |
-| Paginación | `GET /api/solicitudes?page=&per_page=` y pantalla “Mis solicitudes” |
+| Validaciones | Backend: `validators.py`; Front: `shared/form-validators.ts` |
+| Paginación | `GET /api/solicitudes?page=&per_page=` + pantalla Mis solicitudes |
 
 ---
 
-## Requisitos (desarrollo local completo)
+## 🛠️ Instalación y desarrollo
+
+### Requisitos
 
 - Docker y Docker Compose
 - Python 3.10+
 - Node.js 20+ y npm
 
----
-
-## 1. API + base de datos con Docker (recomendado para pruebas)
-
-Desde la raíz del repo (levanta PostgreSQL **y** la API en **http://localhost:5000**):
+### API + BD con Docker (recomendado)
 
 ```bash
 docker compose up -d --build
-```
-
-Comprueba el estado:
-
-```bash
 curl -s http://localhost:5000/health
 ```
 
-Deberías ver `{"status":"ok"}`. Los logs de la API: `docker compose logs -f api`.
+Logs: `docker compose logs -f api`. Para parar: `docker compose down`. Para recrear la BD desde cero: `docker compose down -v`.
 
-Para parar: `docker compose down`. Si necesitas recrear la BD desde cero: `docker compose down -v` y vuelve a ejecutar el comando de arriba.
+PostgreSQL queda en **5433 → 5432** en el contenedor (evita conflicto con instancias locales). Para conectar desde DBeaver: `localhost:5433`, usuario `eps_user`, BD `eps_db`. El script `schema.sql` se aplica solo en el primer arranque del volumen.
 
-PostgreSQL queda expuesto en el host en **5433** → contenedor **5432** (así no choca con un PostgreSQL local que ya use **5432**). Para DBeaver: `localhost:5433`, usuario `eps_user`, BD `eps_db`. El script `schema.sql` se aplica en el **primer** arranque del volumen.
+**Credenciales por defecto** (coinciden con `.env.example`):
 
-El backend usa el driver **psycopg 3** (`postgresql+psycopg://` en `DATABASE_URL`).
+| Variable | Valor |
+|----------|-------|
+| Usuario | `eps_user` |
+| Contraseña | `eps_pass` |
+| Base de datos | `eps_db` |
 
-Credenciales por defecto (coinciden con `eps-solicitudes-api/.env.example`):
-
-| Variable   | Valor      |
-|-----------|------------|
-| Usuario   | `eps_user` |
-| Contraseña| `eps_pass` |
-| Base      | `eps_db`   |
-
-> Si el volumen ya existía de un intento anterior sin datos, elimínalo: `docker compose down -v` y vuelve a subir el servicio.
-
----
-
-## 2. API en local sin Docker (solo desarrollo)
-
-Si prefieres ejecutar Flask en tu máquina (necesitas PostgreSQL arriba, p. ej. solo `docker compose up -d db`):
+### API sin Docker (solo desarrollo)
 
 ```bash
 cd eps-solicitudes-api
-python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
 python wsgi.py
 ```
 
-API en **http://localhost:5000** (modo desarrollo con recarga). Ajusta `DATABASE_URL` en `.env` si Postgres del compose está en el puerto **5433** del host.
-
-### Endpoints
-
-| Método | Ruta | Autenticación | Descripción |
-|--------|------|---------------|-------------|
-| `GET` | `/health` | No | Estado del servicio |
-| `POST` | `/auth/register` | No | Registro (`email`, `password`) |
-| `POST` | `/auth/login` | No | Login (`email`, `password`) → JWT |
-| `GET` | `/api/medicamentos` | Bearer JWT | Listado de medicamentos |
-| `POST` | `/api/solicitudes` | Bearer JWT | Crear solicitud (`medicamento_id` + campos extra si NO POS) |
-| `GET` | `/api/solicitudes` | Bearer JWT | Listado paginado (`page`, `per_page`) del usuario |
-
-**Headers:** `Authorization: Bearer <token>` en rutas protegidas.
-
-**NO POS:** si el medicamento tiene `es_pos: false`, el cuerpo debe incluir `numero_orden`, `direccion`, `telefono`, `correo` (validados en backend).
+> Ajusta `DATABASE_URL` en `.env` si Postgres del compose está en el puerto **5433** del host.
 
 ---
 
-## 3. Web — `eps-solicitudes-web` (Angular)
+## 📡 Endpoints
 
-```bash
-cd eps-solicitudes-web
-npm install
-npm start
-```
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| `GET` | `/health` | — | Estado del servicio |
+| `POST` | `/auth/register` | — | Registro (`email`, `password`) |
+| `POST` | `/auth/login` | — | Login → JWT |
+| `GET` | `/api/medicamentos` | Bearer JWT | Catálogo de medicamentos |
+| `POST` | `/api/solicitudes` | Bearer JWT | Crear solicitud |
+| `GET` | `/api/solicitudes` | Bearer JWT | Listado paginado del usuario |
 
-Aplicación en **http://localhost:4200**. El `apiUrl` por defecto apunta a `http://localhost:5000` (`src/environments/environment.ts`).
+**Rutas protegidas:** header `Authorization: Bearer <token>`.
+
+**Solicitud NO POS:** si `es_pos: false`, el body debe incluir `numero_orden`, `direccion`, `telefono` y `correo` (validados en backend).
 
 ---
 
-## Modelo entidad-relación
+## 🗄️ Modelo entidad-relación
 
 ```mermaid
 erDiagram
@@ -256,77 +224,71 @@ erDiagram
 
 ---
 
-## Pruebas unitarias
+## 🧪 Pruebas
 
-**API (pytest):** usan SQLite en memoria; no requieren PostgreSQL ni Docker.
-
-Usa siempre **el mismo intérprete** para instalar y ejecutar (mejor un **venv** del proyecto):
+**API (pytest)** — usa SQLite en memoria, no necesita PostgreSQL ni Docker:
 
 ```bash
 cd eps-solicitudes-api
-python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Si ves `ModuleNotFoundError` (p. ej. `bcrypt`) al lanzar `pytest` sin el venv activado, es porque `pip` instaló en otro Python distinto al que ejecuta pytest. Solución: activa `.venv` o usa explícitamente `python -m pytest` tras `python -m pip install ...`.
+> Si aparece `ModuleNotFoundError` al correr `pytest` sin el venv, es porque `pip` instaló en un Python distinto. La solución siempre es activar `.venv` primero o usar `python -m pytest`.
 
-**Web (Karma + Jasmine):** hay que ejecutarlo **desde la carpeta del front** (`eps-solicitudes-web`), no desde `eps-solicitudes-api` (si no, Angular dirá *outside a workspace*).
+**Front (Karma + Jasmine)** — ejecutar desde `eps-solicitudes-web`:
 
 ```bash
 cd eps-solicitudes-web
-npm test
-# o en una sola pasada sin abrir el navegador:
 npx ng test --no-watch --browsers=ChromeHeadless
 ```
 
-El enunciado de la prueba no exige tests; sirven como refuerzo y documentación del comportamiento esperado.
+### 🔄 CI en GitHub
 
-### CI en GitHub
+Cada `push` ejecuta `.github/workflows/ci.yml`: **pytest** en la API y **`npm run build`** en el front.
 
-En cada `push` se ejecuta el workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml): **pytest** en la API y **`npm run build`** en el front.
+### 🧰 Makefile (opcional)
 
-### Makefile (opcional)
-
-Desde la raíz del repo: `make up` (Docker), `make test-api`, `make build-web`. Ver [`Makefile`](Makefile).
+Desde la raíz: `make up`, `make test-api`, `make build-web`.
 
 ---
 
-## Patrones y clean code (API)
+## 🏗️ Arquitectura y patrones (API)
 
-| Principio / patrón | Cómo se aplica aquí |
-|--------------------|---------------------|
-| **Separación de capas** | Blueprints `auth` vs `solicitudes`; rutas delgadas. |
-| **DRY** | Validación de correo centralizada en `app/validators.py`; fechas JSON en `app/serialization.py`. |
-| **SRP** | `error_handlers.py` solo manejo HTTP/JWT; rutas solo orquestan. |
-| **App factory** | `create_app()` permite tests y configuración por entorno. |
-| **Seguridad** | Contraseñas con bcrypt; JWT en rutas protegidas; `IntegrityError` en registro. |
+| Principio | Aplicación |
+|-----------|------------|
+| **Separación de capas** | Blueprints `auth` vs `solicitudes`; rutas delgadas que solo orquestan |
+| **DRY** | Validación de correo en `validators.py`; serialización de fechas en `serialization.py` |
+| **SRP** | `error_handlers.py` solo maneja errores HTTP/JWT |
+| **App factory** | `create_app()` habilita tests y configuración por entorno |
+| **Seguridad** | bcrypt para contraseñas; JWT en rutas protegidas; `IntegrityError` en registro duplicado |
 
-**Front (Angular):** servicios inyectables (`AuthService`, `SolicitudService`), rutas con `canActivate`, interceptor HTTP para JWT y 401, validadores en `shared/form-validators.ts`.
-
----
-
-## Estructura del repositorio
-
-- `docker-compose.yml` — PostgreSQL + API
-- `schema.sql` — DDL + datos iniciales de medicamentos
-- `eps-solicitudes-api/` — Flask, blueprints `auth` y `api` (solicitudes)
-- `eps-solicitudes-web/` — Angular 19 (rutas lazy, interceptor JWT)
+**Front (Angular):** servicios inyectables (`AuthService`, `SolicitudService`), guards con `canActivate`, interceptor HTTP para JWT y manejo de 401, validadores en `shared/form-validators.ts`.
 
 ---
 
-## Entorno de ejecución
+## 📁 Estructura del repositorio
 
-| Componente   | Versión orientativa |
-|-------------|---------------------|
-| PostgreSQL  | 16 (imagen Alpine)  |
-| Python      | 3.10+               |
-| Flask       | 3.x                 |
-| Angular     | 19                  |
+```
+.
+├── docker-compose.yml          # PostgreSQL + API
+├── schema.sql                  # DDL + datos iniciales de medicamentos
+├── eps-solicitudes-api/        # Flask · blueprints auth y api
+└── eps-solicitudes-web/        # Angular 19 · rutas lazy · interceptor JWT
+```
 
 ---
 
-## Licencia / uso
+## ⚙️ Stack de ejecución
 
-Proyecto de prueba técnica.
+| Componente | Versión |
+|------------|---------|
+| PostgreSQL | 16 (Alpine) |
+| Python | 3.10+ |
+| Flask | 3.x |
+| Angular | 19 |
+
+---
+
+*Proyecto de prueba técnica.*
