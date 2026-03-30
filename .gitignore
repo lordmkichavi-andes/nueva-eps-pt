@@ -1,0 +1,12 @@
+.DS_Store
+*.pyc
+__pycache__/
+eps-solicitudes-api/.venv/
+eps-solicitudes-api/.env
+eps-solicitudes-api/.pytest_cache/
+eps-solicitudes-api/pytest-last-run.txt
+eps-solicitudes-web/node_modules/
+eps-solicitudes-web/dist/
+eps-solicitudes-web/.angular/
+eps-solicitudes-web/ng-test-last-run.txt
+.cursor/

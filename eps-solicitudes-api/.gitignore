@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+pytest-out.txt
+pytest-last-run.txt
+pytest-exit.code

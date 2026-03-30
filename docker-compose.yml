@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: eps-postgres
+    environment:
+      POSTGRES_USER: eps_user
+      POSTGRES_PASSWORD: eps_pass
+      POSTGRES_DB: eps_db
+    # Puerto 5432 en el host suele estar ocupado por otro PostgreSQL local
+    ports:
+      - "5433:5432"
+    volumes:
+      - eps_pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eps_user -d eps_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./eps-solicitudes-api
+      dockerfile: Dockerfile
+    container_name: eps-solicitudes-api
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://eps_user:eps_pass@db:5432/eps_db
+      SECRET_KEY: dev-docker-secret
+      JWT_SECRET_KEY: dev-docker-jwt
+      ALLOWED_ORIGINS: http://localhost:4200,http://127.0.0.1:4200
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  eps_pgdata:

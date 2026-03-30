@@ -1,0 +1,54 @@
+<div class="shell">
+  <div class="card">
+    <h1>Iniciar sesión</h1>
+    <p class="hint">EPS — solicitudes de medicamentos</p>
+
+    @if (error) {
+      <div class="alert" role="alert">{{ error }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label [class.invalid]="showError('email')">
+        <span>Correo</span>
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          [attr.aria-invalid]="showError('email')"
+        />
+      </label>
+      @if (showError('email')) {
+        @if (form.controls.email.errors?.['required']) {
+          <span class="field-error">El correo es obligatorio</span>
+        } @else if (form.controls.email.errors?.['emailStrict']) {
+          <span class="field-error">Introduce un correo válido (ej. usuario&#64;dominio.com)</span>
+        }
+      }
+
+      <label [class.invalid]="showError('password')">
+        <span>Contraseña</span>
+        <input
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          [attr.aria-invalid]="showError('password')"
+        />
+      </label>
+      @if (showError('password')) {
+        @if (form.controls.password.errors?.['required']) {
+          <span class="field-error">La contraseña es obligatoria</span>
+        } @else if (form.controls.password.errors?.['minlength']) {
+          <span class="field-error">Mínimo 8 caracteres</span>
+        }
+      }
+
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Entrando…' : 'Entrar' }}
+      </button>
+    </form>
+
+    <p class="footer">
+      ¿No tienes cuenta? <a routerLink="/register">Registrarse</a>
+    </p>
+  </div>
+</div>

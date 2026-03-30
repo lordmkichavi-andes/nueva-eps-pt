@@ -1,0 +1,136 @@
+<div class="layout">
+  <header class="bar">
+    <div>
+      <h1>Solicitudes de medicamentos</h1>
+      @if (auth.user(); as u) {
+        <p class="sub">Sesión: {{ u.email }}</p>
+      }
+    </div>
+    <button type="button" class="btn-ghost" (click)="auth.logout()">Cerrar sesión</button>
+  </header>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>Nueva solicitud</h2>
+      @if (successMsg) {
+        <div class="ok">{{ successMsg }}</div>
+      }
+      @if (errorForm) {
+        <div class="alert">{{ errorForm }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+        <label [class.invalid]="showError('medicamento_id')">
+          <span>Medicamento</span>
+          <select
+            formControlName="medicamento_id"
+            [attr.aria-invalid]="showError('medicamento_id')"
+          >
+            <option [ngValue]="null">Seleccione…</option>
+            @for (m of medicamentos(); track m.id) {
+              <option [ngValue]="m.id">{{ m.nombre }} {{ m.es_pos ? '(POS)' : '(NO POS)' }}</option>
+            }
+          </select>
+        </label>
+        @if (showError('medicamento_id')) {
+          <span class="field-error">Seleccione un medicamento</span>
+        }
+
+        @if (esNoPos()) {
+          <div class="no-pos">
+            <p class="badge">Medicamento NO POS: complete los datos adicionales</p>
+            <label [class.invalid]="showError('numero_orden')">
+              <span>Número de orden</span>
+              <input type="text" formControlName="numero_orden" [attr.aria-invalid]="showError('numero_orden')" />
+            </label>
+            @if (showError('numero_orden') && form.controls.numero_orden.errors?.['requiredTrimmed']) {
+              <span class="field-error">Obligatorio (no puede ser solo espacios)</span>
+            }
+
+            <label [class.invalid]="showError('direccion')">
+              <span>Dirección</span>
+              <input type="text" formControlName="direccion" [attr.aria-invalid]="showError('direccion')" />
+            </label>
+            @if (showError('direccion') && form.controls.direccion.errors?.['requiredTrimmed']) {
+              <span class="field-error">Obligatoria (no puede ser solo espacios)</span>
+            }
+
+            <label [class.invalid]="showError('telefono')">
+              <span>Teléfono</span>
+              <input type="tel" formControlName="telefono" [attr.aria-invalid]="showError('telefono')" />
+            </label>
+            @if (showError('telefono')) {
+              @if (form.controls.telefono.errors?.['requiredTrimmed']) {
+                <span class="field-error">Obligatorio</span>
+              } @else if (form.controls.telefono.errors?.['telefono']) {
+                <span class="field-error">Use entre 7 y 15 dígitos (puede incluir espacios o +)</span>
+              }
+            }
+
+            <label [class.invalid]="showError('correo')">
+              <span>Correo electrónico</span>
+              <input type="email" formControlName="correo" [attr.aria-invalid]="showError('correo')" />
+            </label>
+            @if (showError('correo')) {
+              @if (form.controls.correo.errors?.['requiredTrimmed']) {
+                <span class="field-error">Obligatorio</span>
+              } @else if (form.controls.correo.errors?.['emailStrict']) {
+                <span class="field-error">Correo no válido (ej. usuario&#64;dominio.com)</span>
+              }
+            }
+          </div>
+        }
+
+        <button type="submit" [disabled]="loadingForm">
+          {{ loadingForm ? 'Enviando…' : 'Enviar solicitud' }}
+        </button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Mis solicitudes</h2>
+      @if (errorList) {
+        <div class="alert">{{ errorList }}</div>
+      }
+      @if (loadingList) {
+        <p class="muted">Cargando…</p>
+      } @else if (lista().length === 0) {
+        <p class="muted">No hay solicitudes aún.</p>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Medicamento</th>
+                <th>Tipo</th>
+                <th>Extra NO POS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of lista(); track s.id) {
+                <tr>
+                  <td>{{ s.created_at | date : 'short' }}</td>
+                  <td>{{ s.medicamento_nombre }}</td>
+                  <td>{{ s.es_pos ? 'POS' : 'NO POS' }}</td>
+                  <td class="extra">
+                    @if (!s.es_pos) {
+                      <span>Orden: {{ s.numero_orden }} · {{ s.direccion }} · {{ s.telefono }} · {{ s.correo }}</span>
+                    } @else {
+                      —
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <button type="button" (click)="prev()" [disabled]="page() <= 1">Anterior</button>
+          <span>Página {{ page() }} de {{ pages() || 1 }} ({{ total() }} total)</span>
+          <button type="button" (click)="next()" [disabled]="page() >= pages()">Siguiente</button>
+        </div>
+      }
+    </div>
+  </section>
+</div>
