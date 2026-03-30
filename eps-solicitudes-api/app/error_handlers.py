@@ -1,4 +1,3 @@
-"""Handlers globales: respuestas JSON coherentes y mensajes claros para JWT."""
 import logging
 
 from flask import Flask, jsonify, request

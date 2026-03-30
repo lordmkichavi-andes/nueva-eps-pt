@@ -1,4 +1,3 @@
-"""Ejecutar una vez si la BD se creó sin datos: python seed_medicamentos.py"""
 from app import create_app
 from app.extensions import db
 from app.models import Medicamento

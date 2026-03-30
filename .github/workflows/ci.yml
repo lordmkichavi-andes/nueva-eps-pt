@@ -1,4 +1,3 @@
-# Verificación automática en cada push/PR (refuerza el entregable profesional).
 name: CI
 
 on:

@@ -1,6 +1,5 @@
 import { AbstractControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 
-/** Correo con formato razonable (más estricto que Validators.email por defecto). */
 export function emailStrict(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const raw = (control.value ?? '').toString().trim();
@@ -12,7 +11,6 @@ export function emailStrict(): ValidatorFn {
   };
 }
 
-/** Obligatorio ignorando solo espacios al inicio/final. */
 export function requiredTrimmed(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const raw = (control.value ?? '').toString().trim();
@@ -20,7 +18,6 @@ export function requiredTrimmed(): ValidatorFn {
   };
 }
 
-/** Teléfono: dígitos, espacios, +, guiones; longitud mínima 7. */
 export function telefonoColombia(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const raw = (control.value ?? '').toString().trim();
@@ -35,7 +32,6 @@ export function telefonoColombia(): ValidatorFn {
   };
 }
 
-/** Select medicamento: exige un id numérico elegido. */
 export function medicamentoSeleccionado(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const v = control.value;
@@ -46,6 +42,5 @@ export function medicamentoSeleccionado(): ValidatorFn {
   };
 }
 
-/** Composición habitual para correo en formularios de auth. */
 export const emailLoginValidators = [Validators.required, emailStrict()];
 export const passwordLoginValidators = [Validators.required, Validators.minLength(8)];

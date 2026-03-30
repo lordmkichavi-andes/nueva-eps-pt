@@ -1,6 +1,3 @@
--- Esquema EPS — PostgreSQL
--- Usuarios: contraseña almacenada como hash (bcrypt) vía aplicación
-
 CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -29,7 +26,6 @@ CREATE TABLE IF NOT EXISTS solicitudes (
 CREATE INDEX IF NOT EXISTS idx_solicitudes_usuario ON solicitudes(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_solicitudes_created ON solicitudes(created_at DESC);
 
--- Datos iniciales de ejemplo
 INSERT INTO medicamentos (nombre, es_pos)
 SELECT * FROM (VALUES
     ('Acetaminofén 500 mg', TRUE::boolean),

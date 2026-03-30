@@ -12,7 +12,6 @@ def _split_origins(raw: str) -> list[str]:
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change")
-    # Usar dialecto psycopg v3: postgresql+psycopg://
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
         "postgresql+psycopg://eps_user:eps_pass@localhost:5432/eps_db",
@@ -20,7 +19,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "jwt-secret-change")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
-    # CORS: orígenes permitidos (coma-separados). Angular en local: 4200
     ALLOWED_ORIGINS = _split_origins(
         os.environ.get(
             "ALLOWED_ORIGINS",

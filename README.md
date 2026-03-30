@@ -1,17 +1,148 @@
 # EPS — Prueba técnica (Angular + Flask + PostgreSQL)
 
-Dos proyectos independientes alineados con la prueba técnica (solicitudes de medicamentos EPS):
+Aplicación **full stack** para **solicitudes de medicamentos**: autenticación (JWT), catálogo de medicamentos (POS / NO POS), creación de solicitudes con validación condicional y listado paginado.
 
-- **`eps-solicitudes-web/`** — aplicación Angular (login, registro, solicitudes, listado).
-- **`eps-solicitudes-api/`** — API REST Flask (autenticación JWT y gestión de solicitudes).
+Este repositorio contiene **dos proyectos independientes**:
 
-La base de datos PostgreSQL se ejecuta con Docker.
+| Carpeta | Rol |
+|---------|-----|
+| **`eps-solicitudes-api/`** | API REST Flask (módulos `auth` y solicitudes). |
+| **`eps-solicitudes-web/`** | SPA Angular (login, registro, formulario, listado). |
 
-## Requisitos
+La base de datos es **PostgreSQL**, dockerizada junto a la API en el `docker-compose` de la raíz.
+
+---
+
+## Repositorio
+
+**GitHub:** [https://github.com/lordmkichavi-andes/nueva-eps-pt](https://github.com/lordmkichavi-andes/nueva-eps-pt)
+
+Rama principal: **`main`**. En cada `push` se ejecuta **CI** (pytest + build de Angular): [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+---
+
+## Qué incluye esta entrega (checklist)
+
+- [x] **Backend** Python (Flask): `/auth/login`, `/auth/register`, contraseñas con hash (bcrypt), JWT en rutas protegidas.
+- [x] **Módulos separados** de autenticación y de solicitudes (blueprints).
+- [x] **Frontend** Angular: login/registro, solicitud con campos extra si el medicamento es **NO POS**, listado **paginado** solo autenticado.
+- [x] **PostgreSQL**: script [`schema.sql`](schema.sql) + modelo ER en este README.
+- [x] **Documentación**: instalación, endpoints, entorno; Docker Compose para levantar API + BD.
+- [x] **Pruebas** (refuerzo): pytest en API, tests unitarios básicos en Angular; CI en GitHub.
+
+---
+
+## Validación rápida (~5 minutos)
+
+Objetivo: que una persona pueda **comprobar que todo funciona** sin adivinar comandos.
+
+### Paso 0 — Requisitos
+
+- **Docker Desktop** (o Docker Engine + Compose) funcionando.
+- **Node.js 20+** y **npm** (solo para el front).
+
+### Paso 1 — Levantar API y base de datos
+
+En la **raíz del repositorio** (donde está `docker-compose.yml`):
+
+```bash
+docker compose up -d --build
+```
+
+Espera unos segundos y comprueba la API:
+
+```bash
+curl -s http://localhost:5000/health
+```
+
+**Resultado esperado:** `{"status":"ok"}`
+
+Si falla el puerto **5432** en el host, este proyecto publica PostgreSQL en **5433** (ver tabla más abajo). La API sigue usando el servicio `db` por red interna.
+
+### Paso 2 — Levantar el front
+
+En **otra terminal**:
+
+```bash
+cd eps-solicitudes-web
+npm install
+npm start
+```
+
+**Resultado esperado:** compilación sin errores y mensaje indicando **`http://127.0.0.1:4200`** (o `localhost:4200`).
+
+### Paso 3 — Probar en el navegador
+
+1. Abre **http://localhost:4200**
+2. **Registrarse** con un correo válido y contraseña de **al menos 8 caracteres** (no hay usuario por defecto).
+3. En **Nueva solicitud**, elige un medicamento **POS** y envía; debe aparecer en **Mis solicitudes**.
+4. Elige un medicamento **NO POS**: deben mostrarse y validarse orden, dirección, teléfono y correo.
+5. Comprueba la **paginación** si hay más solicitudes que el tamaño de página.
+
+### Paso 4 — (Opcional) Pruebas automáticas locales
+
+```bash
+# API — usar siempre el venv del proyecto
+cd eps-solicitudes-api
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+python -m pytest -v
+```
+
+```bash
+# Front — desde su carpeta
+cd eps-solicitudes-web
+npx ng test --no-watch --browsers=ChromeHeadless
+npm run build
+```
+
+---
+
+## Tabla de URLs y puertos
+
+| Servicio | URL / puerto | Notas |
+|----------|----------------|-------|
+| **API (Flask)** | `http://localhost:5000` | Health: `GET /health` |
+| **Front (Angular dev)** | `http://localhost:4200` | Configurado en `environment.ts` → `apiUrl` apunta a `:5000` |
+| **PostgreSQL (host)** | `localhost:5433` | Usuario `eps_user`, BD `eps_db`, pass en README más abajo |
+| **PostgreSQL (contenedor)** | servicio `db`, puerto interno 5432 | La API usa `db:5432` por Docker network |
+
+El front envía el JWT en el header `Authorization: Bearer <token>` (interceptor Angular).
+
+---
+
+## Flujo de demostración sugerido (para video o revisión oral)
+
+1. Mostrar `README` y estructura (`eps-solicitudes-api`, `eps-solicitudes-web`, `schema.sql`, `docker-compose.yml`).
+2. `docker compose up -d --build` + `curl /health`.
+3. Registro → login automático → pantalla de solicitudes.
+4. Solicitud **POS** (solo medicamento).
+5. Solicitud **NO POS** con datos extra.
+6. Listado con paginación y cierre de sesión.
+
+---
+
+## Guía para quien revisa la entrega
+
+| Criterio | Dónde verlo |
+|----------|-------------|
+| Separación auth / solicitudes | `eps-solicitudes-api/app/auth/`, `app/solicitudes/` |
+| Contraseña no en texto plano | bcrypt en `app/auth/routes.py` |
+| Endpoints requeridos | Tabla “Endpoints” más abajo |
+| Script SQL + ER | `schema.sql` + diagrama Mermaid en este archivo |
+| Validaciones | Backend: rutas + `validators.py`; Front: `shared/form-validators.ts` |
+| Paginación | `GET /api/solicitudes?page=&per_page=` y pantalla “Mis solicitudes” |
+
+---
+
+## Requisitos (desarrollo local completo)
 
 - Docker y Docker Compose
 - Python 3.10+
 - Node.js 20+ y npm
+
+---
 
 ## 1. API + base de datos con Docker (recomendado para pruebas)
 
@@ -45,6 +176,8 @@ Credenciales por defecto (coinciden con `eps-solicitudes-api/.env.example`):
 
 > Si el volumen ya existía de un intento anterior sin datos, elimínalo: `docker compose down -v` y vuelve a subir el servicio.
 
+---
+
 ## 2. API en local sin Docker (solo desarrollo)
 
 Si prefieres ejecutar Flask en tu máquina (necesitas PostgreSQL arriba, p. ej. solo `docker compose up -d db`):
@@ -58,7 +191,7 @@ cp .env.example .env
 python wsgi.py
 ```
 
-API en **http://localhost:5000** (modo desarrollo con recarga).
+API en **http://localhost:5000** (modo desarrollo con recarga). Ajusta `DATABASE_URL` en `.env` si Postgres del compose está en el puerto **5433** del host.
 
 ### Endpoints
 
@@ -75,6 +208,8 @@ API en **http://localhost:5000** (modo desarrollo con recarga).
 
 **NO POS:** si el medicamento tiene `es_pos: false`, el cuerpo debe incluir `numero_orden`, `direccion`, `telefono`, `correo` (validados en backend).
 
+---
+
 ## 3. Web — `eps-solicitudes-web` (Angular)
 
 ```bash
@@ -84,6 +219,8 @@ npm start
 ```
 
 Aplicación en **http://localhost:4200**. El `apiUrl` por defecto apunta a `http://localhost:5000` (`src/environments/environment.ts`).
+
+---
 
 ## Modelo entidad-relación
 
@@ -117,6 +254,8 @@ erDiagram
   }
 ```
 
+---
+
 ## Pruebas unitarias
 
 **API (pytest):** usan SQLite en memoria; no requieren PostgreSQL ni Docker.
@@ -144,13 +283,15 @@ npx ng test --no-watch --browsers=ChromeHeadless
 
 El enunciado de la prueba no exige tests; sirven como refuerzo y documentación del comportamiento esperado.
 
-### CI en GitHub (badge verde en el repo)
+### CI en GitHub
 
-Si subes el código a GitHub, en cada `push` se ejecuta el workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml): **pytest** en la API y **`npm run build`** en el front. Refuerza la entrega sin coste para quien revisa.
+En cada `push` se ejecuta el workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml): **pytest** en la API y **`npm run build`** en el front.
 
 ### Makefile (opcional)
 
 Desde la raíz del repo: `make up` (Docker), `make test-api`, `make build-web`. Ver [`Makefile`](Makefile).
+
+---
 
 ## Patrones y clean code (API)
 
@@ -162,14 +303,30 @@ Desde la raíz del repo: `make up` (Docker), `make test-api`, `make build-web`. 
 | **App factory** | `create_app()` permite tests y configuración por entorno. |
 | **Seguridad** | Contraseñas con bcrypt; JWT en rutas protegidas; `IntegrityError` en registro. |
 
-**Front (Angular):** servicios inyectables (`AuthService`, `SolicitudService`), rutas con `canActivate`, interceptor HTTP para JWT y 401, componentes enfocados en UI.
+**Front (Angular):** servicios inyectables (`AuthService`, `SolicitudService`), rutas con `canActivate`, interceptor HTTP para JWT y 401, validadores en `shared/form-validators.ts`.
+
+---
 
 ## Estructura del repositorio
 
-- `docker-compose.yml` — PostgreSQL 16
+- `docker-compose.yml` — PostgreSQL + API
 - `schema.sql` — DDL + datos iniciales de medicamentos
 - `eps-solicitudes-api/` — Flask, blueprints `auth` y `api` (solicitudes)
 - `eps-solicitudes-web/` — Angular 19 (rutas lazy, interceptor JWT)
+
+---
+
+## Problemas frecuentes
+
+| Síntoma | Qué hacer |
+|---------|-----------|
+| `Bind for 0.0.0.0:5432 failed` | Otro Postgres usa el 5432. Este proyecto mapea **5433** en el host; no cambies sin revisar `docker-compose.yml`. |
+| `ERR_CONNECTION_REFUSED` en :4200 | El front no está levantado: `cd eps-solicitudes-web && npm start`. |
+| `ModuleNotFoundError: bcrypt` al hacer pytest | Activa `.venv` y usa `python -m pytest`. |
+| `ng test` “outside a workspace” | Debes estar en **`eps-solicitudes-web`**, no en la API. |
+| Tabla de solicitudes vacía pero “N total” | Ya corregido en API (serialización de fechas ISO). Reconstruye: `docker compose up -d --build api`. |
+
+---
 
 ## Entorno de ejecución
 
@@ -179,6 +336,8 @@ Desde la raíz del repo: `make up` (Docker), `make test-api`, `make build-web`. 
 | Python      | 3.10+               |
 | Flask       | 3.x                 |
 | Angular     | 19                  |
+
+---
 
 ## Licencia / uso
 

@@ -37,7 +37,6 @@ def client(app):
 
 @pytest.fixture
 def auth_headers(client):
-    """Registra usuario y devuelve headers Authorization."""
     r = client.post(
         "/auth/register",
         json={"email": "tester@example.com", "password": "password12"},
